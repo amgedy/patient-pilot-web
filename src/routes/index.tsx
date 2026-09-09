@@ -210,7 +210,10 @@ function AppointmentsPage() {
                 </span>
               </div>
               <PatientForm
-                onDone={() => queryClient.invalidateQueries({ queryKey: ["patients"] })}
+                onDone={() => {
+                  queryClient.invalidateQueries({ queryKey: ["patients"] });
+                  queryClient.invalidateQueries({ queryKey: ["appointments"] });
+                }}
               />
             </section>
 
