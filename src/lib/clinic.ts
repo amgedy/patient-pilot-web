@@ -3,26 +3,32 @@ export type Service = (typeof SERVICES)[number];
 
 export const SERVICE_META: Record<
   Service,
-  { price: string; color: "brand" | "mint" | "rose"; letter: string; description: string }
+  { price: string; color: "brand" | "mint" | "rose"; icon: "sparkles" | "stethoscope" | "search"; description: string }
 > = {
   "تنظيف الأسنان": {
     price: "٦٥٠ جنيه",
     color: "brand",
-    letter: "ن",
+    icon: "sparkles",
     description: "إزالة الجير والتلميع الكامل مع فحص اللثة",
   },
   "حشو الأسنان": {
     price: "٤٥٠ جنيه",
     color: "mint",
-    letter: "ح",
+    icon: "stethoscope",
     description: "علاج التسوس وحشو التجاويف بأحدث الخامات",
   },
   "كشف عام": {
     price: "٣٠٠ جنيه",
     color: "rose",
-    letter: "ك",
+    icon: "search",
     description: "فحص شامل وتقييم صحة الفم والأسنان",
   },
+};
+
+export const SERVICE_ICON: Record<Service, "sparkles" | "stethoscope" | "search"> = {
+  "تنظيف الأسنان": "sparkles",
+  "حشو الأسنان": "stethoscope",
+  "كشف عام": "search",
 };
 
 export const STATUSES = ["مؤكد", "بالانتظار", "مكتمل", "ملغي"] as const;

@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { Sparkles, Stethoscope, Search } from "lucide-react";
 import { SERVICES, SERVICE_META } from "@/lib/clinic";
 
 export const Route = createFileRoute("/services")({
@@ -50,9 +51,15 @@ function ServicesPage() {
                 <div className={`h-1.5 bg-gradient-to-l ${styles.bar}`} />
                 <div className="p-6">
                   <div
-                    className={`size-12 rounded-2xl grid place-items-center font-cairo font-extrabold text-xl ${styles.chip}`}
+                    className={`size-12 rounded-2xl grid place-items-center ${styles.chip}`}
                   >
-                    {meta.letter}
+                    {meta.icon === "sparkles" ? (
+                      <Sparkles className="size-6" />
+                    ) : meta.icon === "stethoscope" ? (
+                      <Stethoscope className="size-6" />
+                    ) : (
+                      <Search className="size-6" />
+                    )}
                   </div>
                   <h2 className="mt-4 font-cairo font-extrabold text-lg">{service}</h2>
                   <p className="mt-1.5 text-sm text-muted-foreground leading-relaxed">
