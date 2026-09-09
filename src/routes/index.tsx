@@ -11,7 +11,6 @@ import {
   SERVICE_DOT,
   STATUS_STYLES,
   STATUSES,
-  TIME_SLOTS,
   formatDateAr,
   formatTime,
   toArabicDigits,
@@ -327,7 +326,7 @@ function PatientForm({ onDone }: { onDone: () => void }) {
   const [notes, setNotes] = useState("");
   const [service, setService] = useState<Service>(SERVICES[0]);
   const [date, setDate] = useState(todayStr());
-  const [time, setTime] = useState(TIME_SLOTS[0] ?? "09:00");
+  const [time, setTime] = useState("09:00");
   const [saving, setSaving] = useState(false);
   const [duplicate, setDuplicate] = useState<Patient | null>(null);
 
@@ -337,7 +336,7 @@ function PatientForm({ onDone }: { onDone: () => void }) {
     setNotes("");
     setService(SERVICES[0]);
     setDate(todayStr());
-    setTime(TIME_SLOTS[0] ?? "09:00");
+    setTime("09:00");
     setDuplicate(null);
   };
 
@@ -392,7 +391,9 @@ function PatientForm({ onDone }: { onDone: () => void }) {
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const digits = phone.replace(/\D/g, "");
+    const digits = phone
+      .replace(/[٠-٩]/g, (digit) => String("٠١٢٣٤٥٦٧٨٩".indexOf(digit)))
+      .replace(/\D/g, "");
     if (!name.trim()) {
       toast.error("أدخل اسم المريض");
       return;
@@ -438,7 +439,11 @@ function PatientForm({ onDone }: { onDone: () => void }) {
         <input
           value={phone}
           onChange={(e) => {
-            setPhone(e.target.value.replace(/\D/g, "").slice(0, 11));
+            const normalized = e.target.value
+              .replace(/[٠-٩]/g, (digit) => String("٠١٢٣٤٥٦٧٨٩".indexOf(digit)))
+              .replace(/\D/g, "")
+              .slice(0, 11);
+            setPhone(normalized);
             setDuplicate(null);
           }}
           inputMode="numeric"
@@ -475,17 +480,13 @@ function PatientForm({ onDone }: { onDone: () => void }) {
         </div>
         <div>
           <label className="text-xs font-semibold text-muted-foreground">وقت الكشف</label>
-          <select
+          <input
+            type="time"
             value={time}
             onChange={(e) => setTime(e.target.value)}
             className={inputCls}
-          >
-            {TIME_SLOTS.map((t) => (
-              <option key={t} value={t}>
-                {formatTime(t)}
-              </option>
-            ))}
-          </select>
+            dir="ltr"
+          />
         </div>
       </div>
       <div>
