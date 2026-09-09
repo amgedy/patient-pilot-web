@@ -11,6 +11,7 @@ import {
   SERVICE_DOT,
   STATUS_STYLES,
   STATUSES,
+  TIME_SLOTS,
   formatDateAr,
   formatTime,
   toArabicDigits,
@@ -210,7 +211,10 @@ function AppointmentsPage() {
                 </span>
               </div>
               <PatientForm
-                onDone={() => queryClient.invalidateQueries({ queryKey: ["patients"] })}
+                onDone={() => {
+                  queryClient.invalidateQueries({ queryKey: ["patients"] });
+                  queryClient.invalidateQueries({ queryKey: ["appointments"] });
+                }}
               />
             </section>
 
@@ -321,28 +325,98 @@ function PatientForm({ onDone }: { onDone: () => void }) {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [notes, setNotes] = useState("");
+  const [service, setService] = useState<Service>(SERVICES[0]);
+  const [date, setDate] = useState(todayStr());
+  const [time, setTime] = useState(TIME_SLOTS[0] ?? "09:00");
   const [saving, setSaving] = useState(false);
+  const [duplicate, setDuplicate] = useState<Patient | null>(null);
 
-  const submit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!name.trim() || !phone.trim()) {
-      toast.error("أدخل الاسم ورقم الهاتف");
-      return;
-    }
-    setSaving(true);
-    const { error } = await supabase
-      .from("patients")
-      .insert({ name: name.trim(), phone: phone.trim(), notes: notes.trim() || null });
-    setSaving(false);
-    if (error) {
-      toast.error("تعذر حفظ المريض");
-      return;
-    }
-    toast.success("تم فتح ملف للمريض");
+  const reset = () => {
     setName("");
     setPhone("");
     setNotes("");
+    setService(SERVICES[0]);
+    setDate(todayStr());
+    setTime(TIME_SLOTS[0] ?? "09:00");
+    setDuplicate(null);
+  };
+
+  const addAppointment = async (patientId: string) => {
+    const { error } = await supabase.from("appointments").insert({
+      patient_id: patientId,
+      service,
+      appointment_date: date,
+      appointment_time: time,
+      status: "مؤكد",
+    });
+    return error;
+  };
+
+  const createNewFile = async () => {
+    setSaving(true);
+    const { data, error } = await supabase
+      .from("patients")
+      .insert({ name: name.trim(), phone: phone.trim(), notes: notes.trim() || null })
+      .select()
+      .single();
+    if (error || !data) {
+      setSaving(false);
+      toast.error("تعذر حفظ المريض");
+      return;
+    }
+    const apptError = await addAppointment(data.id);
+    setSaving(false);
+    if (apptError) {
+      toast.error("تم فتح الملف لكن تعذر حجز الموعد");
+      onDone();
+      return;
+    }
+    toast.success("تم فتح ملف للمريض وحجز الموعد");
+    reset();
     onDone();
+  };
+
+  const addToExisting = async () => {
+    if (!duplicate) return;
+    setSaving(true);
+    const apptError = await addAppointment(duplicate.id);
+    setSaving(false);
+    if (apptError) {
+      toast.error("تعذر حجز الموعد");
+      return;
+    }
+    toast.success(`تمت إضافة الموعد لملف ${duplicate.name}`);
+    reset();
+    onDone();
+  };
+
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const digits = phone.replace(/\D/g, "");
+    if (!name.trim()) {
+      toast.error("أدخل اسم المريض");
+      return;
+    }
+    if (digits.length !== 11) {
+      toast.error("رقم الهاتف يجب أن يكون ١١ رقماً بالضبط");
+      return;
+    }
+    setSaving(true);
+    const { data: existing, error } = await supabase
+      .from("patients")
+      .select("*")
+      .eq("phone", digits)
+      .maybeSingle();
+    setSaving(false);
+    if (error) {
+      toast.error("تعذر التحقق من رقم الهاتف");
+      return;
+    }
+    if (existing) {
+      setDuplicate(existing as unknown as Patient);
+      return;
+    }
+    await createNewFile();
   };
 
   const inputCls =
@@ -360,14 +434,59 @@ function PatientForm({ onDone }: { onDone: () => void }) {
         />
       </div>
       <div>
-        <label className="text-xs font-semibold text-muted-foreground">رقم الهاتف</label>
+        <label className="text-xs font-semibold text-muted-foreground">رقم الهاتف (١١ رقم)</label>
         <input
           value={phone}
-          onChange={(e) => setPhone(e.target.value)}
+          onChange={(e) => {
+            setPhone(e.target.value.replace(/\D/g, "").slice(0, 11));
+            setDuplicate(null);
+          }}
+          inputMode="numeric"
+          maxLength={11}
           className={inputCls}
           placeholder="01xxxxxxxxx"
           dir="ltr"
         />
+      </div>
+      <div>
+        <label className="text-xs font-semibold text-muted-foreground">الخدمة</label>
+        <select
+          value={service}
+          onChange={(e) => setService(e.target.value as Service)}
+          className={inputCls}
+        >
+          {SERVICES.map((s) => (
+            <option key={s} value={s}>
+              {s}
+            </option>
+          ))}
+        </select>
+      </div>
+      <div className="grid grid-cols-2 gap-3">
+        <div>
+          <label className="text-xs font-semibold text-muted-foreground">تاريخ الكشف</label>
+          <input
+            type="date"
+            value={date}
+            onChange={(e) => setDate(e.target.value)}
+            className={inputCls}
+            dir="ltr"
+          />
+        </div>
+        <div>
+          <label className="text-xs font-semibold text-muted-foreground">وقت الكشف</label>
+          <select
+            value={time}
+            onChange={(e) => setTime(e.target.value)}
+            className={inputCls}
+          >
+            {TIME_SLOTS.map((t) => (
+              <option key={t} value={t}>
+                {formatTime(t)}
+              </option>
+            ))}
+          </select>
+        </div>
       </div>
       <div>
         <label className="text-xs font-semibold text-muted-foreground">ملاحظات (اختياري)</label>
@@ -378,12 +497,40 @@ function PatientForm({ onDone }: { onDone: () => void }) {
           placeholder="حساسية، أمراض مزمنة…"
         />
       </div>
+
+      {duplicate && (
+        <div className="rounded-xl border border-gold/40 bg-gold-soft/50 p-3 space-y-2">
+          <div className="text-xs font-semibold leading-relaxed">
+            هذا الرقم موجود بالفعل في ملفات المرضى باسم «{duplicate.name}». هل تريد فتح ملف جديد
+            بنفس الرقم أم إضافة الموعد لنفس الملف؟
+          </div>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              disabled={saving}
+              onClick={addToExisting}
+              className="flex-1 h-9 rounded-lg bg-brand text-primary-foreground text-xs font-bold disabled:opacity-60"
+            >
+              إضافة الموعد لنفس الملف
+            </button>
+            <button
+              type="button"
+              disabled={saving}
+              onClick={createNewFile}
+              className="flex-1 h-9 rounded-lg border border-line bg-card text-xs font-bold disabled:opacity-60"
+            >
+              فتح ملف جديد
+            </button>
+          </div>
+        </div>
+      )}
+
       <button
         type="submit"
-        disabled={saving}
+        disabled={saving || !!duplicate}
         className="w-full h-11 rounded-xl bg-gradient-to-l from-brand to-[#3E86EC] text-primary-foreground font-bold text-sm shadow-[0_10px_20px_-10px_rgba(30,109,224,.9)] ring-1 ring-white/30 hover:shadow-[0_14px_26px_-8px_rgba(30,109,224,.95)] transition-shadow disabled:opacity-60"
       >
-        {saving ? "جارٍ الحفظ…" : "حفظ المريض"}
+        {saving ? "جارٍ الحفظ…" : "حفظ المريض والموعد"}
       </button>
     </form>
   );
