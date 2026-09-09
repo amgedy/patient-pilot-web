@@ -11,7 +11,6 @@ import {
   SERVICE_DOT,
   STATUS_STYLES,
   STATUSES,
-  TIME_SLOTS,
   formatDateAr,
   formatTime,
   toArabicDigits,
@@ -19,13 +18,6 @@ import {
   type Service,
   type AppointmentStatus,
 } from "@/lib/clinic";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -49,7 +41,6 @@ export const Route = createFileRoute("/")({
 function AppointmentsPage() {
   const queryClient = useQueryClient();
   const [search, setSearch] = useState("");
-  const [dialogOpen, setDialogOpen] = useState(false);
 
   const { data: appointments = [] } = useQuery({
     queryKey: ["appointments"],
@@ -109,26 +100,6 @@ function AppointmentsPage() {
                 placeholder="اسم المريض أو رقم الهاتف"
               />
             </label>
-            <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-              <DialogTrigger asChild>
-                <button className="h-10 px-4 rounded-xl bg-gradient-to-l from-brand to-[#3E86EC] text-primary-foreground text-sm font-bold shadow-[0_8px_18px_-10px_rgba(30,109,224,.9)] ring-1 ring-white/30 hover:shadow-[0_12px_22px_-8px_rgba(30,109,224,.95)] transition-shadow">
-                  + حجز موعد
-                </button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-md" dir="rtl">
-                <DialogHeader>
-                  <DialogTitle className="font-cairo">حجز موعد جديد</DialogTitle>
-                </DialogHeader>
-                <BookingForm
-                  patients={patients}
-                  onDone={() => {
-                    setDialogOpen(false);
-                    queryClient.invalidateQueries({ queryKey: ["appointments"] });
-                    queryClient.invalidateQueries({ queryKey: ["patients"] });
-                  }}
-                />
-              </DialogContent>
-            </Dialog>
           </div>
         </div>
       </header>
@@ -343,112 +314,6 @@ function AppointmentRow({ appointment: a }: { appointment: Appointment }) {
         </select>
       </td>
     </tr>
-  );
-}
-
-function BookingForm({ patients, onDone }: { patients: Patient[]; onDone: () => void }) {
-  const [patientId, setPatientId] = useState("");
-  const [service, setService] = useState<Service>(SERVICES[0]);
-  const [date, setDate] = useState(todayStr());
-  const [time, setTime] = useState<string>(TIME_SLOTS[0] ?? "09:00");
-  const [saving, setSaving] = useState(false);
-
-  const submit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!patientId) {
-      toast.error("اختر المريض أولاً");
-      return;
-    }
-    if (time < "09:00" || time >= "14:00") {
-      toast.error("الموعد يجب أن يكون بين ٩ صباحاً و٢ ظهراً");
-      return;
-    }
-    setSaving(true);
-    const { error } = await supabase.from("appointments").insert({
-      patient_id: patientId,
-      service,
-      appointment_date: date,
-      appointment_time: time,
-      status: "بالانتظار",
-    });
-    setSaving(false);
-    if (error) {
-      toast.error("تعذر حفظ الموعد — تأكد أن الوقت بين ٩ صباحاً و٢ ظهراً");
-      return;
-    }
-    toast.success("تم حجز الموعد بنجاح");
-    onDone();
-  };
-
-  const inputCls =
-    "mt-1 w-full h-10 px-3 rounded-xl bg-background border border-line text-sm outline-none focus:border-brand focus:ring-2 focus:ring-brand/20";
-
-  return (
-    <form onSubmit={submit} className="space-y-3 mt-2">
-      <div>
-        <label className="text-xs font-semibold text-muted-foreground">المريض</label>
-        <select
-          value={patientId}
-          onChange={(e) => setPatientId(e.target.value)}
-          className={inputCls}
-        >
-          <option value="">اختر مريضاً…</option>
-          {patients.map((p) => (
-            <option key={p.id} value={p.id}>
-              {p.name} — {p.phone}
-            </option>
-          ))}
-        </select>
-        {patients.length === 0 && (
-          <p className="text-[11px] text-gold mt-1">أضف مريضاً أولاً من نموذج "إضافة مريض"</p>
-        )}
-      </div>
-      <div>
-        <label className="text-xs font-semibold text-muted-foreground">الخدمة</label>
-        <select
-          value={service}
-          onChange={(e) => setService(e.target.value as Service)}
-          className={inputCls}
-        >
-          {SERVICES.map((s) => (
-            <option key={s} value={s}>
-              {s}
-            </option>
-          ))}
-        </select>
-      </div>
-      <div className="grid grid-cols-2 gap-3">
-        <div>
-          <label className="text-xs font-semibold text-muted-foreground">التاريخ</label>
-          <input
-            type="date"
-            value={date}
-            min={todayStr()}
-            onChange={(e) => setDate(e.target.value)}
-            className={inputCls}
-          />
-        </div>
-        <div>
-          <label className="text-xs font-semibold text-muted-foreground">
-            الوقت
-          </label>
-          <select value={time} onChange={(e) => setTime(e.target.value)} className={inputCls}>
-            {TIME_SLOTS.map((t) => (
-              <option key={t} value={t}>
-                {formatTime(t)}
-              </option>
-            ))}
-          </select>
-        </div>
-      </div>
-      <button
-        type="submit"
-        disabled={saving}
-        className="w-full h-11 rounded-xl bg-gradient-to-l from-brand to-[#3E86EC] text-primary-foreground font-bold text-sm shadow-[0_10px_20px_-10px_rgba(30,109,224,.9)] ring-1 ring-white/30 hover:shadow-[0_14px_26px_-8px_rgba(30,109,224,.95)] transition-shadow disabled:opacity-60"
-      >
-        {saving ? "جارٍ الحفظ…" : "تأكيد الحجز"}
-      </button>
-    </form>
   );
 }
 

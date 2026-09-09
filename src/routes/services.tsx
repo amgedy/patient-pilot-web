@@ -69,12 +69,6 @@ function ServicesPage() {
                     <span className="font-cairo font-extrabold text-base text-brand">
                       {meta.price}
                     </span>
-                    <Link
-                      to="/"
-                      className="text-xs font-bold text-brand hover:underline"
-                    >
-                      احجز موعداً ←
-                    </Link>
                   </div>
                 </div>
               </div>
