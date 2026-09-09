@@ -175,9 +175,15 @@ function AppointmentsPage() {
                 style={{ animationDelay: `${i * 60}ms` }}
               >
                 <div
-                  className={`size-10 rounded-xl grid place-items-center font-cairo font-extrabold ${bg}`}
+                  className={`size-10 rounded-xl grid place-items-center ${bg}`}
                 >
-                  {meta.letter}
+                  {meta.icon === "sparkles" ? (
+                    <Sparkles className="size-5" />
+                  ) : meta.icon === "stethoscope" ? (
+                    <Stethoscope className="size-5" />
+                  ) : (
+                    <Search className="size-5" />
+                  )}
                 </div>
                 <div className="min-w-0">
                   <div className="font-bold text-sm">{service}</div>
