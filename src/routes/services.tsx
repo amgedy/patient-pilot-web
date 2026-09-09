@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { Sparkles, Stethoscope, Search } from "lucide-react";
 import { SERVICES, SERVICE_META } from "@/lib/clinic";
 
