@@ -87,12 +87,8 @@ function AppointmentsPage() {
     return a.patients?.name.includes(q) || a.patients?.phone.includes(q);
   });
 
-  const lastPatientTime =
-    todayAppointments.length > 0
-      ? formatTime(
-          todayAppointments[todayAppointments.length - 1].appointment_time,
-        )
-      : null;
+  const last = todayAppointments[todayAppointments.length - 1];
+  const lastPatientTime = last ? formatTime(last.appointment_time) : null;
 
   return (
     <>
@@ -361,7 +357,7 @@ function BookingForm({ patients, onDone }: { patients: Patient[]; onDone: () => 
   const [patientId, setPatientId] = useState("");
   const [service, setService] = useState<Service>(SERVICES[0]);
   const [date, setDate] = useState(todayStr());
-  const [time, setTime] = useState(TIME_SLOTS[0]);
+  const [time, setTime] = useState<string>(TIME_SLOTS[0] ?? "09:00");
   const [saving, setSaving] = useState(false);
 
   const submit = async (e: React.FormEvent) => {

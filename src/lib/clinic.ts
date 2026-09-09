@@ -46,11 +46,11 @@ export const TIME_SLOTS: string[] = (() => {
 const AR_DIGITS = ["٠", "١", "٢", "٣", "٤", "٥", "٦", "٧", "٨", "٩"];
 
 export function toArabicDigits(value: string | number): string {
-  return String(value).replace(/\d/g, (d) => AR_DIGITS[Number(d)]);
+  return String(value).replace(/\d/g, (d) => AR_DIGITS[Number(d)] ?? d);
 }
 
 export function formatTime(time: string): string {
-  const [hStr, mStr] = time.slice(0, 5).split(":");
+  const [hStr = "9", mStr = "00"] = time.slice(0, 5).split(":");
   let h = Number(hStr);
   const period = h < 12 ? "ص" : "م";
   if (h > 12) h -= 12;
