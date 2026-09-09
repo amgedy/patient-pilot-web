@@ -11,6 +11,7 @@ import {
   SERVICE_DOT,
   STATUS_STYLES,
   STATUSES,
+  TIME_SLOTS,
   formatDateAr,
   formatTime,
   toArabicDigits,
