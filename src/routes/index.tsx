@@ -33,12 +33,12 @@ export const Route = createFileRoute("/")({
       {
         name: "description",
         content:
-          "جدول مواعيد عيادة الأسنان اليومية والسابقة. العيادة تفتح من ٩ صباحاً حتى ٢ ظهراً.",
+          "جدول مواعيد عيادة الأسنان اليومية والسابقة.",
       },
       { property: "og:title", content: "المواعيد — عيادة نور لطب الأسنان" },
       {
         property: "og:description",
-        content: "متابعة وحجز مواعيد العيادة ضمن مواعيد العمل من ٩ صباحاً حتى ٢ ظهراً.",
+        content: "متابعة وحجز مواعيد العيادة وملفات المرضى.",
       },
     ],
   }),
@@ -155,17 +155,6 @@ function AppointmentsPage() {
               <span className="text-sm text-muted-foreground font-plex font-medium">ملف</span>
             </div>
           </div>
-          <div className="flex-1 min-w-[220px] rounded-2xl bg-card border border-line p-4 flex items-center gap-3">
-            <div className="size-10 rounded-xl bg-gold-soft grid place-items-center text-gold font-cairo font-extrabold">
-              !
-            </div>
-            <div>
-              <div className="text-xs font-bold text-gold">ملاحظة</div>
-              <div className="text-sm font-semibold mt-0.5">
-                العيادة تفتح من ٩ صباحاً حتى ٢ ظهراً
-              </div>
-            </div>
-          </div>
         </div>
 
         {/* الخدمات */}
@@ -191,7 +180,7 @@ function AppointmentsPage() {
                 </div>
                 <div className="min-w-0">
                   <div className="font-bold text-sm">{service}</div>
-                  <div className="text-xs text-muted-foreground mt-0.5">{meta.duration}</div>
+                  <div className="text-xs font-bold text-brand mt-0.5">{meta.price}</div>
                 </div>
               </div>
             );
@@ -204,9 +193,6 @@ function AppointmentsPage() {
             <div className="flex items-center justify-between px-5 py-4 border-b border-line">
               <div>
                 <div className="font-cairo font-extrabold text-base">جدول المواعيد</div>
-                <div className="text-xs text-muted-foreground mt-0.5">
-                  جميع المواعيد ضمن أوقات العمل (٩ ص — ٢ م)
-                </div>
               </div>
             </div>
             <div className="overflow-x-auto">
@@ -437,7 +423,7 @@ function BookingForm({ patients, onDone }: { patients: Patient[]; onDone: () => 
         </div>
         <div>
           <label className="text-xs font-semibold text-muted-foreground">
-            الوقت (٩ ص — ٢ م)
+            الوقت
           </label>
           <select value={time} onChange={(e) => setTime(e.target.value)} className={inputCls}>
             {TIME_SLOTS.map((t) => (

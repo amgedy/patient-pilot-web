@@ -3,22 +3,22 @@ export type Service = (typeof SERVICES)[number];
 
 export const SERVICE_META: Record<
   Service,
-  { duration: string; color: "brand" | "mint" | "rose"; letter: string; description: string }
+  { price: string; color: "brand" | "mint" | "rose"; letter: string; description: string }
 > = {
   "تنظيف الأسنان": {
-    duration: "٤٥ دقيقة",
+    price: "٦٥٠ جنيه",
     color: "brand",
     letter: "ن",
     description: "إزالة الجير والتلميع الكامل مع فحص اللثة",
   },
   "حشو الأسنان": {
-    duration: "٦٠ دقيقة",
+    price: "٤٥٠ جنيه",
     color: "mint",
     letter: "ح",
     description: "علاج التسوس وحشو التجاويف بأحدث الخامات",
   },
   "كشف عام": {
-    duration: "٣٠ دقيقة",
+    price: "٣٠٠ جنيه",
     color: "rose",
     letter: "ك",
     description: "فحص شامل وتقييم صحة الفم والأسنان",

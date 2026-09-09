@@ -85,7 +85,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       {
         name: "description",
         content:
-          "مساعد عيادة الأسنان لمتابعة المواعيد وملفات المرضى وخدمات العيادة: تنظيف الأسنان، حشو الأسنان، وكشف عام. مواعيد العمل من ٩ صباحاً حتى ٢ ظهراً.",
+          "مساعد عيادة الأسنان لمتابعة المواعيد وملفات المرضى وخدمات العيادة: تنظيف الأسنان، حشو الأسنان، وكشف عام.",
       },
       { property: "og:title", content: "عيادة نور لطب الأسنان" },
       {
@@ -183,15 +183,6 @@ function AppSidebar() {
           ),
         )}
 
-        <div className="px-3 pt-4 pb-1 text-[10px] font-bold tracking-widest text-muted-foreground/70">
-          مواعيد العمل
-        </div>
-        <div className="px-3 py-2.5 rounded-xl bg-gradient-to-l from-mint-soft to-card border border-line">
-          <div className="flex items-center justify-between text-xs">
-            <span className="font-semibold">يومياً</span>
-            <span className="font-cairo font-bold text-mint">٩ ص — ٢ م</span>
-          </div>
-        </div>
       </nav>
 
       <div className="mt-auto p-3">
@@ -201,9 +192,6 @@ function AppSidebar() {
             <div className="text-[11px] text-white/70">حالة العيادة</div>
             <div className="font-cairo font-bold text-base mt-1 flex items-center gap-2">
               <span className="size-2 rounded-full bg-mint" /> مفتوحة اليوم
-            </div>
-            <div className="mt-3 text-[11px] text-white/70">
-              من ٩ صباحاً حتى ٢ ظهراً
             </div>
           </div>
         </div>
